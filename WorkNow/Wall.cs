@@ -13,6 +13,7 @@ namespace Pacman
             base.Create(scene);
             sprite.TextureRect = new IntRect(54, 54, 18, 18);
             sprite.Origin = new Vector2f(9, 9);
+            System.Console.WriteLine(Solid);
         }
         public override void Update(Scene scene, float deltaTime) { }
     }

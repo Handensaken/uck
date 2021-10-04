@@ -48,7 +48,6 @@ namespace Pacman
                 }
                 row++;
                 column = 1;
-                System.Console.WriteLine(row);
             }
             currentScene = nextScene;
             nextScene = "";

@@ -37,7 +37,7 @@ namespace Pacman
             }
         }
         public FloatRect Bounds { get; }
-        public virtual bool Solid { get; }
+        public virtual bool Solid => false;
         public virtual void Create(Scene scene)
         {
             sprite.Texture = scene.Assets.LoadTexture(textureName);

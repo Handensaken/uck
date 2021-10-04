@@ -32,6 +32,7 @@ namespace Pacman
         }
         protected static Vector2f ToVector(int dir) //I'm sure there's a more elegant way to do this but I'm too tired to bother figuring it out
         {
+            //I'm very incertain of which value is supposed to represent which direction. If 1 and -1 represent y axis movement, how do I invert 0?? Maybe it will become clear upon making the player
             switch (dir)
             {
                 case 0:
@@ -41,6 +42,14 @@ namespace Pacman
                 case 1:
                     {
                         return new Vector2f(0, -1);
+                    }
+                case 2:
+                    {
+                        return new Vector2f(-1, 0);
+                    }
+                case 3:
+                    {
+                        return new Vector2f(0, 1);
                     }
                 default:
                     {
