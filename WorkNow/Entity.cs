@@ -1,6 +1,8 @@
-using System;
-using SFML.Graphics;
 using SFML.System;
+using System.Collections.Generic;
+using SFML.Graphics;
+using SFML.Window;
+using System;
 
 namespace Pacman
 {
@@ -8,58 +10,48 @@ namespace Pacman
     {
         private string textureName;
         protected Sprite sprite;
+        public bool Dead;
+        public bool DontDestroyOnLoad;
 
-        // public bool Dead;
-
-        public enum Flags
+        protected Entity(string textureName)
         {
-            Preparing,
-            Active,
-            Dead
-        }
-        public Flags flag;
-
-        public Entity(string textureName)
-        {
-            sprite = new Sprite();
             this.textureName = textureName;
-            flag = Flags.Preparing;
+            sprite = new Sprite();
         }
+
         public Vector2f Position
         {
-            get
-            {
-                return sprite.Position;
-            }
-            set
-            {
-                sprite.Position = value;
-            }
+            get => sprite.Position;
+            set => sprite.Position = value;
         }
-        public FloatRect Bounds { get; }
-        public virtual bool Solid => false;
+
+        public virtual FloatRect Bounds => sprite.GetGlobalBounds();
+
         public virtual void Create(Scene scene)
         {
             sprite.Texture = scene.Assets.LoadTexture(textureName);
         }
-        public void Destroy(Scene scene)
-        {
-            //empty for now
-        }
-        protected virtual void CollideWith(Scene s, Entity other)
+
+        public virtual void Destroy(Scene scene)
         {
 
         }
-        public virtual void Render(RenderTarget target)
-        {
-            target.Draw(sprite);
-        }
+
+        public virtual bool Solid => false;
+
         public virtual void Update(Scene scene, float deltaTime)
         {
             foreach (Entity found in scene.FindIntersects(Bounds))
             {
+                
                 CollideWith(scene, found);
             }
         }
+
+        public virtual void Render(RenderTarget target)
+        {
+            target.Draw(sprite);
+        }
+        protected virtual void CollideWith(Scene s, Entity other) { }
     }
 }

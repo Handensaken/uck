@@ -1,46 +1,30 @@
-using System;
-using System.Collections.Generic;
 using SFML.System;
+using System.Collections.Generic;
 using SFML.Graphics;
+using System;
 using System.Linq;
+
 namespace Pacman
 {
+    public delegate void ValueChangedEvent(Scene scene, int value);
     public class Scene
     {
-        private List<Entity> entities;
-        public readonly SceneLoader Loader;
-        public readonly AssetManager Assets;
-        public Scene()
-        {
-            entities = new List<Entity>();
-            Loader = new SceneLoader();
-            Assets = new AssetManager();
-        }
+
+        private readonly List<Entity> entities = new List<Entity>();
+        public readonly SceneLoader Loader = new SceneLoader();
+        public readonly AssetManager Assets = new AssetManager();
+        public event ValueChangedEvent GainScore;
+        public event ValueChangedEvent LoseHealth;
+        public event ValueChangedEvent CandyEaten;
         public void Spawn(Entity entity)
         {
             entities.Add(entity);
             entity.Create(this);
         }
-        public void UpdateAll(float deltaTime)
-        {
-            Loader.HandleSceneLoad(this);
-            HandleEntityChanges();
-            foreach (Entity entity in entities.Where(e => e.flag == Entity.Flags.Active))
-            {
-                entity.Update(this, deltaTime);
-            }
-        }
-        public void RenderAll(RenderTarget target)
-        {
-            foreach (Entity entity in entities)
-            {
-                entity.Render(target);
-            }
-        }
         public bool FindByType<T>(out T found) where T : Entity
         {
-            found = default(T);
-            foreach (var entity in entities)
+            // TODO: Loop through list for instances of T
+            foreach (Entity entity in entities)
             {
                 if (entity is T typed)
                 {
@@ -48,36 +32,84 @@ namespace Pacman
                     return true;
                 }
             }
+            found = default(T);
             return false;
         }
-        public IEnumerable<Entity> FindIntersects(FloatRect bounds)
+        public void ClearScene()
         {
             for (int i = entities.Count - 1; i >= 0; i--)
             {
                 Entity entity = entities[i];
-                if (entity.flag == Entity.Flags.Dead) continue;
-                if (entity.Bounds.Intersects(bounds)) yield return entity;
+                if (!entity.DontDestroyOnLoad)
+                {
+                    entities.RemoveAt(i);
+                    entity.Destroy(this);
+                }
             }
         }
-        public void ClearScene()
+
+        public IEnumerable<Entity> FindIntersects(FloatRect bounds)
+        {
+            int lastEntity = entities.Count - 1;
+            for (int i = lastEntity; i >= 0; i--)
+            {
+                Entity entity = entities[i];
+                if (entity.Dead) continue;
+                if (entity.Bounds.Intersects(bounds))
+                {
+                    yield return entity;
+                }
+            }
+        }
+
+        private int scoreGained;
+        public void PublishGainScore(int amount) => scoreGained += amount;
+
+        private int healthLost;
+        public void PublishLoseHealth(int amount) => healthLost += amount;
+
+        private int CandyInt;
+        public void PublishCandyEaten(int amount) => CandyInt += amount;
+        public void UpdateAll(float deltaTime)
+        {
+            Loader.HandleSceneLoader(this);
+
+            if (deltaTime > 0.1f) deltaTime = 0.1f;
+            foreach (Entity entity in entities)
+            {
+                entity.Update(this, deltaTime);
+            }
+            if (scoreGained != 0)
+            {
+                GainScore?.Invoke(this, scoreGained);
+                scoreGained = 0;
+            }
+            if (healthLost != 0)
+            {
+                LoseHealth?.Invoke(this, healthLost);
+                healthLost = 0;
+            }
+            if (CandyInt != 0)
+            {
+                CandyEaten?.Invoke(this, CandyInt);
+                CandyInt = 0;
+            }
+            for (int i = entities.Count - 1; i >= 0; i--)
+            {
+                if (entities[i].Dead) entities.RemoveAt(i);
+            }
+            // Events.InvokeGainScore(this);
+            // Events.InvokeCandyEaten(this);
+            // Events.InvokeLoseHealth(this);
+
+        }
+
+        public void RenderAll(RenderWindow window)
         {
             foreach (Entity entity in entities)
             {
-                entity.flag = Entity.Flags.Dead;
+                entity.Render(window);
             }
-        }
-        private void HandleEntityChanges()  //I'm trying to avoid removing entities during each frame, Instead I flag them and handle all changes before starting the Update functions of each respective entity
-        {
-            foreach (Entity entity in entities.Where(e => e.flag == Entity.Flags.Preparing))
-            {
-                entity.flag = Entity.Flags.Active;
-            }
-            foreach (Entity entity in entities.Where(e => e.flag == Entity.Flags.Dead))
-            {
-                entities.Remove(entity);
-                entity.Destroy(this);
-            }
-
         }
     }
 }

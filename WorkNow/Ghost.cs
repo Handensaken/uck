@@ -1,19 +1,27 @@
-using System;
-using System.Collections.Generic;
-using SFML.Graphics;
 using SFML.System;
+using SFML.Graphics;
+using System.Collections.Generic;
+using System;
+
 namespace Pacman
 {
     public class Ghost : Actor
     {
+        private float frozenTimer;
+        private float timePassed;
+
         public override void Create(Scene scene)
         {
+            base.Create(scene);
+            sprite.TextureRect = new IntRect(36, 0, 18, 18);
             direction = -1;
             speed = 100.0f;
             moving = true;
-            base.Create(scene);
-            sprite.TextureRect = new IntRect(36, 0, 18, 18);
-            sprite.Origin = new Vector2f(9, 9);
+            scene.CandyEaten += OnCandyEaten;
+        }
+        private void OnCandyEaten(Scene scene, int value)
+        {
+            frozenTimer = 5f;
         }
         protected override int PickDirection(Scene scene)
         {
@@ -21,10 +29,72 @@ namespace Pacman
             for (int i = 0; i < 4; i++)
             {
                 if ((i + 2) % 4 == direction) continue;
-                System.Console.WriteLine(IsFree(scene, i));
                 if (IsFree(scene, i)) validMoves.Add(i);
+
             }
-            return validMoves[new Random().Next(0, validMoves.Count)];
+            int r = new Random().Next(0, validMoves.Count);
+            return validMoves[r];
+
         }
+        protected override void CollideWith(Scene scene, Entity e)
+        {
+            if (e is Pacman)
+            {
+                if (frozenTimer <= 0)
+                {
+                    scene.PublishLoseHealth(1);
+
+                }
+                Position = originalPosition;
+            }
+        }
+
+        public override void Update(Scene scene, float deltaTime)
+        {
+            base.Update(scene, deltaTime);
+            frozenTimer = MathF.Max(frozenTimer - deltaTime, 0.0f);
+            timePassed += deltaTime;
+        }
+
+        public override void Render(RenderTarget target)
+        {
+            if (frozenTimer > 0.0f)
+            {
+                if (timePassed >= 0.2)
+                {
+                    if (sprite.TextureRect.Left == 36)
+                    {
+                        sprite.TextureRect = new IntRect(54, 18, 18, 18);
+                    }
+                    else
+                    {
+                        sprite.TextureRect = new IntRect(36, 18, 18, 18);
+                    }
+
+                    timePassed = 0;
+                }
+            }
+            else
+            {
+                if (timePassed >= 0.2)
+                {
+                    if (sprite.TextureRect.Left == 36)
+                    {
+                        sprite.TextureRect = new IntRect(54, 0, 18, 18);
+                    }
+                    else
+                    {
+                        sprite.TextureRect = new IntRect(36, 0, 18, 18);
+                    }
+
+                    timePassed = 0;
+                }
+            }
+            base.Render(target);
+        }
+
+
+
+
     }
 }

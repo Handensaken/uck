@@ -1,7 +1,10 @@
 using System;
-using SFML.System;
+using System.Diagnostics;
 using System.Linq;
 using SFML.Graphics;
+using SFML.Window;
+using SFML.System;
+
 namespace Pacman
 {
     public class Actor : Entity
@@ -12,6 +15,7 @@ namespace Pacman
         protected bool moving;
         protected Vector2f originalPosition;
         protected float originalSpeed;
+
         protected Actor() : base("pacman")
         {
 
@@ -20,9 +24,12 @@ namespace Pacman
         {
             base.Create(scene);
             originalPosition = Position;
-            originalSpeed = speed;
+           // originalSpeed = speed;
         }
-        protected bool IsAligned => (int)MathF.Floor(Position.X) % 18 == 0 && (int)MathF.Floor(Position.Y) % 18 == 0;
+        protected bool IsAligned =>
+            (int)MathF.Floor(Position.X) % 18 == 0 &&
+            (int)MathF.Floor(Position.Y) % 18 == 0;
+
         protected bool IsFree(Scene scene, int dir)
         {
             Vector2f at = Position + new Vector2f(9, 9);
@@ -30,9 +37,8 @@ namespace Pacman
             FloatRect rect = new FloatRect(at.X, at.Y, 1, 1);
             return !scene.FindIntersects(rect).Any(e => e.Solid);
         }
-        protected static Vector2f ToVector(int dir) //I'm sure there's a more elegant way to do this but I'm too tired to bother figuring it out
+        protected static Vector2f ToVector(int dir)
         {
-            //I'm very incertain of which value is supposed to represent which direction. If 1 and -1 represent y axis movement, how do I invert 0?? Maybe it will become clear upon making the player
             switch (dir)
             {
                 case 0:
@@ -41,6 +47,7 @@ namespace Pacman
                     }
                 case 1:
                     {
+
                         return new Vector2f(0, -1);
                     }
                 case 2:
@@ -53,11 +60,17 @@ namespace Pacman
                     }
                 default:
                     {
-                        return new Vector2f(0, 0);
+                        return new Vector2f(0f, 0f);
                     }
             }
         }
+
         protected virtual int PickDirection(Scene scene) { return 0; }
+        protected void Reset()
+        {   
+            wasAligned = false;
+            Position = originalPosition;
+        }
         public override void Update(Scene scene, float deltaTime)
         {
             base.Update(scene, deltaTime);
@@ -67,6 +80,7 @@ namespace Pacman
                 {
                     direction = PickDirection(scene);
                 }
+
                 if (moving)
                 {
                     wasAligned = true;
