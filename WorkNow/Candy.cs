@@ -18,7 +18,7 @@ namespace Pacman
         {
             if (e is Pacman)
             {
-                scene.PublishCandyEaten(100);
+                scene.Events.PublishCandyEaten(100);
                 this.Dead = true;
             }
         }

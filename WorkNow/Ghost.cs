@@ -17,7 +17,7 @@ namespace Pacman
             direction = -1;
             speed = 100.0f;
             moving = true;
-            scene.CandyEaten += OnCandyEaten;
+            scene.Events.CandyEaten += OnCandyEaten;
         }
         private void OnCandyEaten(Scene scene, int value)
         {
@@ -42,7 +42,7 @@ namespace Pacman
             {
                 if (frozenTimer <= 0)
                 {
-                    scene.PublishLoseHealth(1);
+                    scene.Events.PublishLoseHealth(1);
 
                 }
                 Position = originalPosition;

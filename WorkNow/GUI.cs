@@ -24,8 +24,8 @@ namespace Pacman
             scoreText.Font = scene.Assets.LoadFont("pixel-font");
 
             currentHealth = maxHealth;
-            scene.LoseHealth += OnLoseHealth;
-            scene.GainScore += OnGainScore;
+            scene.Events.LoseHealth += OnLoseHealth;
+            scene.Events.GainScore += OnGainScore;
         }
         private void OnLoseHealth(Scene scene, int amount)
         {
@@ -33,7 +33,7 @@ namespace Pacman
             System.Console.WriteLine(currentHealth);
             if (currentHealth <= 0)
             {
-                DontDestroyOnLoad= false;
+                DontDestroyOnLoad = false;
                 scene.Loader.Reload();
             }
         }
@@ -49,8 +49,8 @@ namespace Pacman
         public override void Destroy(Scene scene)
         {
             base.Destroy(scene);
-            scene.LoseHealth -= OnLoseHealth;
-            scene.GainScore -= OnGainScore;
+            scene.Events.LoseHealth -= OnLoseHealth;
+            scene.Events.GainScore -= OnGainScore;
         }
         public override void Render(RenderTarget target)
         {

@@ -6,16 +6,17 @@ using System.Linq;
 
 namespace Pacman
 {
-    public delegate void ValueChangedEvent(Scene scene, int value);
+    //public delegate void ValueChangedEvent(Scene scene, int value);
     public class Scene
     {
 
         private readonly List<Entity> entities = new List<Entity>();
         public readonly SceneLoader Loader = new SceneLoader();
         public readonly AssetManager Assets = new AssetManager();
-        public event ValueChangedEvent GainScore;
-        public event ValueChangedEvent LoseHealth;
-        public event ValueChangedEvent CandyEaten;
+        public readonly EventManager Events = new EventManager();
+        /*    public event ValueChangedEvent GainScore;
+            public event ValueChangedEvent LoseHealth;
+            public event ValueChangedEvent CandyEaten;*/
         public void Spawn(Entity entity)
         {
             entities.Add(entity);
@@ -62,14 +63,14 @@ namespace Pacman
             }
         }
 
-        private int scoreGained;
+        /*private int scoreGained;
         public void PublishGainScore(int amount) => scoreGained += amount;
 
         private int healthLost;
         public void PublishLoseHealth(int amount) => healthLost += amount;
 
         private int CandyInt;
-        public void PublishCandyEaten(int amount) => CandyInt += amount;
+        public void PublishCandyEaten(int amount) => CandyInt += amount;*/
         public void UpdateAll(float deltaTime)
         {
             Loader.HandleSceneLoader(this);
@@ -79,28 +80,11 @@ namespace Pacman
             {
                 entity.Update(this, deltaTime);
             }
-            if (scoreGained != 0)
-            {
-                GainScore?.Invoke(this, scoreGained);
-                scoreGained = 0;
-            }
-            if (healthLost != 0)
-            {
-                LoseHealth?.Invoke(this, healthLost);
-                healthLost = 0;
-            }
-            if (CandyInt != 0)
-            {
-                CandyEaten?.Invoke(this, CandyInt);
-                CandyInt = 0;
-            }
+            Events.Update(this);
             for (int i = entities.Count - 1; i >= 0; i--)
             {
                 if (entities[i].Dead) entities.RemoveAt(i);
             }
-            // Events.InvokeGainScore(this);
-            // Events.InvokeCandyEaten(this);
-            // Events.InvokeLoseHealth(this);
 
         }
 
